@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>University Lost & Found</title>
+<style>
+:root {
+  --navy-dark:#0a192f;--navy:#112240;--navy-light:#233554;
+  --slate:#8892b0;--slate-light:#a8b2d1;
+  --emerald:#64ffda;--emerald-dark:#4ecdc4;--emerald-glow:rgba(100,255,218,0.1);
+  --lost-red:#ff6b6b;--lost-red-bg:rgba(255,107,107,0.1);
+  --found-green:#51cf66;--found-green-bg:rgba(81,207,102,0.1);
+  --pending-amber:#ffd43b;--pending-amber-bg:rgba(255,212,59,0.1);
+  --approved-green:#40c057;--approved-green-bg:rgba(64,192,87,0.1);
+  --rejected-red:#fa5252;--rejected-red-bg:rgba(250,82,82,0.1);
+  --white:#fff;--gray-50:#f8f9fa;--gray-100:#f1f3f5;--gray-200:#e9ecef;
+  --gray-300:#dee2e6;--gray-400:#ced4da;--gray-500:#adb5bd;
+  --gray-600:#868e96;--gray-700:#495057;--gray-800:#343a40;--gray-900:#212529;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-full:9999px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);--shadow-md:0 4px 6px rgba(0,0,0,.1);
+  --shadow-lg:0 10px 15px rgba(0,0,0,.15);--shadow-xl:0 20px 25px rgba(0,0,0,.2);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--gray-50);color:var(--gray-800);line-height:1.6;min-height:100vh}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;height:auto;display:block}
+button,input,textarea,select{font-family:inherit;font-size:inherit}
+
+/* ── PAGES ── */
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+
+/* ── UTILS ── */
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 1.5rem}
+.flex{display:flex}.flex-col{flex-direction:column}
+.items-center{align-items:center}.justify-between{justify-content:space-between}.justify-center{justify-content:center}
+.gap-sm{gap:.5rem}.gap-md{gap:1rem}.gap-lg{gap:1.5rem}
+.mb-lg{margin-bottom:1.5rem}.mb-xl{margin-bottom:2rem}
+.text-center{text-align:center}
+.fade-in{animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideNotif{from{transform:translateX(120%)}to{transform:translateX(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── BUTTONS ── */
+.btn{padding:.75rem 1.5rem;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;transition:all .15s;font-size:1rem;display:inline-flex;align-items:center;justify-content:center;gap:.5rem}
+.btn-primary{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-dark) 100%);color:#fff;width:100%}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-secondary{background:var(--gray-200);color:var(--gray-700)}
+.btn-secondary:hover{background:var(--gray-300)}
+.btn-success{background:var(--found-green);color:#fff}
+.btn-success:hover{background:#40c057}
+.btn-danger{background:var(--rejected-red);color:#fff}
+.btn-danger:hover{background:#e03131}
+.btn-sm{padding:.4rem .9rem;font-size:.875rem}
+.btn-lg{padding:1rem 2rem;font-size:1.1rem}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:1.25rem}
+.form-label{display:block;margin-bottom:.4rem;font-weight:600;color:var(--gray-700);font-size:.875rem}
+.form-input,.form-select,.form-textarea{width:100%;padding:.75rem 1rem;border:2px solid var(--gray-300);border-radius:var(--radius-md);font-size:1rem;transition:border-color .15s,box-shadow .15s;background:#fff}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 3px var(--emerald-glow)}
+.form-input.error,.form-select.error{border-color:var(--rejected-red)}
+.form-textarea{resize:vertical;min-height:90px}
+.form-error{color:var(--rejected-red);font-size:.8rem;margin-top:.25rem;display:none}
+.form-error.visible{display:block}
+.form-hint{font-size:.75rem;color:var(--gray-600);margin-top:.25rem;font-style:italic}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.divider{margin:1.5rem 0;border-top:1px solid var(--gray-200)}
+
+/* ── BADGES ── */
+.item-badge{padding:.2rem .6rem;border-radius:var(--radius-sm);font-size:.7rem;font-weight:700;text-transform:uppercase}
+.item-badge.lost{background:var(--lost-red-bg);color:var(--lost-red)}
+.item-badge.found{background:var(--found-green-bg);color:var(--found-green)}
+.status-badge{padding:.2rem .6rem;border-radius:var(--radius-full);font-size:.7rem;font-weight:700;text-transform:uppercase;display:inline-block}
+.status-badge.pending{background:var(--pending-amber-bg);color:#e67700}
+.status-badge.approved{background:var(--approved-green-bg);color:var(--approved-green)}
+.status-badge.rejected{background:var(--rejected-red-bg);color:var(--rejected-red)}
+
+/* ══════════════════════════════════════════
+   LOGIN / SIGNUP PAGES
+══════════════════════════════════════════ */
+.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy) 50%,var(--navy-light) 100%);padding:2rem}
+.auth-container{width:100%;max-width:460px}
+.auth-header{text-align:center;margin-bottom:2rem}
+.auth-logo{width:72px;height:72px;background:var(--emerald);border-radius:var(--radius-xl);display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 1rem;box-shadow:0 10px 30px rgba(100,255,218,.3)}
+.auth-title{color:#fff;font-size:1.875rem;font-weight:700;margin-bottom:.35rem}
+.auth-subtitle{color:var(--slate-light);font-size:1rem}
+.auth-card{background:#fff;border-radius:var(--radius-xl);padding:2rem;box-shadow:var(--shadow-xl)}
+.portal-toggle{display:flex;background:var(--gray-100);border-radius:var(--radius-lg);padding:4px;margin-bottom:1.5rem}
+.portal-btn{flex:1;padding:.75rem;border:none;background:transparent;border-radius:var(--radius-md);font-weight:600;cursor:pointer;transition:all .15s;color:var(--gray-600)}
+.portal-btn.active{background:#fff;color:var(--navy);box-shadow:var(--shadow-md)}
+.auth-footer{text-align:center;margin-top:1rem;color:var(--gray-600);font-size:.875rem}
+.auth-footer a{color:var(--navy);font-weight:600;text-decoration:underline;cursor:pointer}
+.signup-container{max-width:580px}
+
+/* ══════════════════════════════════════════
+   NAV
+══════════════════════════════════════════ */
+.nav-header{background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy) 100%);color:#fff;padding:.875rem 0;position:sticky;top:0;z-index:200;box-shadow:var(--shadow-lg)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;gap:2rem}
+.nav-brand{display:flex;align-items:center;gap:.75rem;font-size:1.2rem;font-weight:700;color:#fff;cursor:pointer}
+.nav-brand-icon{width:38px;height:38px;background:var(--emerald);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.nav-menu{display:flex;list-style:none;gap:.5rem}
+.nav-link{padding:.5rem 1rem;border-radius:var(--radius-md);transition:all .15s;font-weight:500;color:var(--slate-light);cursor:pointer}
+.nav-link:hover,.nav-link.active{background:var(--navy-light);color:var(--emerald)}
+.nav-user{display:flex;align-items:center;gap:.75rem}
+.nav-avatar{width:34px;height:34px;background:var(--emerald);border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy-dark);font-size:.9rem}
+.nav-user-name{font-weight:600;font-size:.875rem;color:#fff}
+.nav-user-role{font-size:.75rem;color:var(--slate-light)}
+
+/* ══════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════ */
+.page-content{padding:2rem 0}
+.page-header{margin-bottom:2rem}
+.page-title{font-size:1.875rem;font-weight:700;color:var(--navy-dark);margin-bottom:.35rem}
+.page-subtitle{color:var(--gray-600);font-size:1.1rem}
+.profile-card{background:#fff;border-radius:var(--radius-xl);padding:2rem;box-shadow:var(--shadow-md);display:flex;gap:1.5rem;align-items:center;margin-bottom:2rem}
+.profile-avatar{width:90px;height:90px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--emerald);font-weight:700;flex-shrink:0}
+.profile-info h2{font-size:1.4rem;margin-bottom:.5rem;color:var(--navy-dark)}
+.profile-details{display:flex;flex-wrap:wrap;gap:1rem;color:var(--gray-600);font-size:.9rem}
+.profile-detail{display:flex;align-items:center;gap:.4rem}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;margin-bottom:2rem}
+.summary-card{background:#fff;border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow-md);border-left:4px solid var(--emerald)}
+.summary-card-title{color:var(--gray-600);font-size:.8rem;font-weight:600;text-transform:uppercase;margin-bottom:.4rem}
+.summary-card-value{font-size:2.5rem;font-weight:700;color:var(--navy-dark)}
+.quick-actions{background:#fff;border-radius:var(--radius-xl);padding:2rem;box-shadow:var(--shadow-md)}
+.section-title{font-size:1.4rem;font-weight:700;color:var(--navy-dark);margin-bottom:1.25rem}
+
+/* Image upload */
+.img-upload-area{width:100%;height:180px;border:2px dashed var(--gray-300);border-radius:var(--radius-md);background:var(--gray-50);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;overflow:hidden;position:relative}
+.img-upload-area:hover{border-color:var(--emerald);background:var(--emerald-glow)}
+.img-upload-area.has-image{border:none}
+.img-upload-area img{width:100%;height:100%;object-fit:cover}
+.img-placeholder{text-align:center;color:var(--gray-500)}
+.img-placeholder-icon{font-size:2.5rem;margin-bottom:.4rem}
+.img-placeholder-text{font-size:.875rem;font-weight:600}
+
+/* ══════════════════════════════════════════
+   BROWSE / ITEMS
+══════════════════════════════════════════ */
+.filter-bar{background:#fff;border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow-md);margin-bottom:2rem;display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end}
+.filter-group{flex:1;min-width:180px}
+.filter-label{display:block;margin-bottom:.3rem;font-weight:600;color:var(--gray-700);font-size:.8rem}
+.filter-select,.filter-input{width:100%;padding:.55rem .9rem;border:2px solid var(--gray-300);border-radius:var(--radius-md);font-size:.95rem}
+.filter-select:focus,.filter-input:focus{outline:none;border-color:var(--emerald)}
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.5rem}
+.item-card{background:#fff;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md);transition:all .2s}
+.item-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-xl)}
+.item-card-image{width:100%;height:180px;background:linear-gradient(135deg,var(--gray-200),var(--gray-300));display:flex;align-items:center;justify-content:center;overflow:hidden}
+.item-card-image img{width:100%;height:100%;object-fit:cover}
+.item-card-icon{font-size:3.5rem;color:var(--gray-500)}
+.item-content{padding:1.25rem}
+.item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;gap:.5rem}
+.item-title{font-size:1rem;font-weight:700;color:var(--navy-dark)}
+.item-meta{color:var(--gray-600);font-size:.8rem;margin-bottom:.75rem}
+.item-meta-row{display:flex;align-items:center;gap:.3rem;margin-bottom:.3rem}
+.item-desc{color:var(--gray-700);font-size:.85rem;margin-bottom:1rem;line-height:1.5}
+
+/* ══════════════════════════════════════════
+   CLAIMS TABLE
+══════════════════════════════════════════ */
+.table-wrap{background:#fff;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-md);overflow-x:auto}
+.data-table{width:100%;border-collapse:collapse}
+.data-table thead{background:var(--navy-dark);color:#fff}
+.data-table th{padding:.875rem 1rem;text-align:left;font-weight:600;font-size:.8rem;text-transform:uppercase}
+.data-table td{padding:.875rem 1rem;border-bottom:1px solid var(--gray-200);font-size:.9rem}
+.data-table tbody tr:hover{background:var(--gray-50)}
+.action-btns{display:flex;gap:.4rem}
+
+/* ══════════════════════════════════════════
+   ADMIN LAYOUT
+══════════════════════════════════════════ */
+.admin-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.admin-sidebar{background:var(--navy-dark);color:#fff;padding:1.5rem}
+.sidebar-brand{padding-bottom:1.5rem;border-bottom:1px solid var(--navy-light);margin-bottom:1.5rem}
+.sidebar-title{font-size:1.1rem;font-weight:700;margin-bottom:.25rem}
+.sidebar-sub{color:var(--slate-light);font-size:.8rem}
+.sidebar-nav{list-style:none}
+.sidebar-nav li{margin-bottom:.35rem}
+.sidebar-link{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-radius:var(--radius-md);color:var(--slate-light);transition:all .15s;cursor:pointer}
+.sidebar-link:hover,.sidebar-link.active{background:var(--navy-light);color:var(--emerald)}
+.admin-main{background:var(--gray-50);padding:2rem}
+.admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem}
+.admin-title{font-size:1.875rem;font-weight:700;color:var(--navy-dark)}
+.filter-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.filter-tab{padding:.45rem 1rem;border:none;border-radius:var(--radius-full);cursor:pointer;font-size:.85rem;font-weight:600;background:var(--gray-200);color:var(--gray-700);transition:all .15s}
+.filter-tab.active{background:var(--navy-dark);color:#fff}
+
+/* ══════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════ */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;visibility:hidden;transition:all .25s}
+.modal.active{opacity:1;visibility:visible}
+.modal-content{background:#fff;border-radius:var(--radius-xl);padding:2rem;max-width:580px;width:90%;max-height:90vh;overflow-y:auto;transform:scale(.92);transition:transform .25s}
+.modal.active .modal-content{transform:scale(1)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.modal-title{font-size:1.4rem;font-weight:700;color:var(--navy-dark)}
+.modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--gray-600);line-height:1}
+.modal-close:hover{color:var(--rejected-red)}
+
+/* ══════════════════════════════════════════
+   NOTIFICATION
+══════════════════════════════════════════ */
+.notif{position:fixed;top:20px;right:20px;padding:14px 20px;border-radius:var(--radius-md);color:#fff;font-weight:600;z-index:9999;max-width:380px;box-shadow:var(--shadow-xl);animation:slideNotif .3s ease;font-size:.9rem}
+.notif.warning{color:#333}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media(max-width:900px){
+  .admin-layout{grid-template-columns:1fr}
+  .admin-sidebar{display:none}
+  .form-row{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .nav-menu{display:none}
+  .profile-card{flex-direction:column;text-align:center}
+  .profile-details{justify-content:center}
+  .items-grid{grid-template-columns:1fr}
+  .filter-bar{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     PAGE: LOGIN
+══════════════════════════════════════════ -->
+<div class="page active" id="page-login">
+  <div class="auth-page">
+    <div class="auth-container">
+      <div class="auth-header">
+        <div class="auth-logo">🔍</div>
+        <h1 class="auth-title">University Lost & Found</h1>
+        <p class="auth-subtitle">Reunite with your belongings</p>
+      </div>
+      <div class="auth-card fade-in">
+        <div class="portal-toggle">
+          <button class="portal-btn active" id="portal-student">Student / Staff</button>
+          <button class="portal-btn" id="portal-admin">Admin Portal</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input id="login-email" type="email" class="form-input" placeholder="your.email@uni.edu.pk">
+          <div class="form-error" id="login-email-err">Enter a valid email</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input id="login-password" type="password" class="form-input" placeholder="Enter your password">
+          <div class="form-error" id="login-pass-err">Password is required</div>
+        </div>
+        <button class="btn btn-primary btn-lg" id="login-btn">🔐 Sign In</button>
+        <div class="divider"></div>
+        <div class="text-center" style="font-size:.875rem;color:var(--gray-600)">
+          Don't have an account?
+          <span style="display:flex;gap:.75rem;justify-content:center;margin-top:.75rem">
+            <button class="btn btn-secondary btn-sm" onclick="showPage('page-student-signup')">🎓 Student Signup</button>
+            <button class="btn btn-secondary btn-sm" onclick="showPage('page-admin-signup')">👨‍💼 Admin Signup</button>
+          </span>
+        </div>
+        <div style="margin-top:1.25rem;padding:1rem;background:var(--gray-50);border-radius:var(--radius-md);font-size:.8rem;color:var(--gray-600)">
+          <strong>Demo accounts</strong> (password: <code>password123</code>)<br>
+          Student: <code>ali.hassan@uni.edu.pk</code><br>
+          Admin: <code>sara.khan@uni.edu.pk</code> → select Admin Portal
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: STUDENT SIGNUP
+══════════════════════════════════════════ -->
+<div class="page" id="page-student-signup">
+  <div class="auth-page">
+    <div class="auth-container signup-container">
+      <div class="auth-header">
+        <div class="auth-logo">🎓</div>
+        <h1 class="auth-title">Student Registration</h1>
+        <p class="auth-subtitle">Create your account to report and claim items</p>
+      </div>
+      <div class="auth-card fade-in">
+        <div class="form-group"><label class="form-label">Full Name *</label><input id="ss-name" type="text" class="form-input" placeholder="Your full name"></div>
+        <div class="form-group"><label class="form-label">University Email *</label><input id="ss-email" type="email" class="form-input" placeholder="your.email@uni.edu.pk"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Phone *</label><input id="ss-phone" type="tel" class="form-input" placeholder="0300-1234567"></div>
+          <div class="form-group"><label class="form-label">Department *</label>
+            <select id="ss-dept" class="form-select">
+              <option value="">Select...</option>
+              <option>Computer Science</option><option>Electrical Engineering</option>
+              <option>Business Administration</option><option>Mathematics</option>
+              <option>Physics</option><option>Chemistry</option>
+              <option>Mechanical Engineering</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Password * (min 6)</label><input id="ss-pass" type="password" class="form-input" placeholder="Create password"></div>
+          <div class="form-group"><label class="form-label">Confirm Password *</label><input id="ss-confirm" type="password" class="form-input" placeholder="Repeat password"><div class="form-error" id="ss-pass-err">Passwords do not match</div></div>
+        </div>
+        <button class="btn btn-primary" id="ss-submit">✓ Create Account</button>
+        <div class="auth-footer">Already have an account? <a onclick="showPage('page-login')">Login here</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: ADMIN SIGNUP
+══════════════════════════════════════════ -->
+<div class="page" id="page-admin-signup">
+  <div class="auth-page">
+    <div class="auth-container signup-container">
+      <div class="auth-header">
+        <div class="auth-logo">👨‍💼</div>
+        <h1 class="auth-title">Admin Registration</h1>
+        <p class="auth-subtitle">Create an administrator account</p>
+      </div>
+      <div class="auth-card fade-in">
+        <h3 style="margin-bottom:1rem;color:var(--navy-dark)">📋 Personal Info</h3>
+        <div class="form-group"><label class="form-label">Full Name *</label><input id="as-name" type="text" class="form-input" placeholder="Full name"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">University Email *</label><input id="as-email" type="email" class="form-input" placeholder="admin@uni.edu.pk"></div>
+          <div class="form-group"><label class="form-label">Phone *</label><input id="as-phone" type="tel" class="form-input" placeholder="0300-0000000"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Department *</label>
+          <select id="as-dept" class="form-select">
+            <option value="">Select...</option>
+            <option>Computer Science</option><option>Electrical Engineering</option>
+            <option>Student Affairs</option><option>Security Office</option>
+            <option>Administration</option><option>IT Department</option><option>Other</option>
+          </select>
+        </div>
+        <div class="divider"></div>
+        <h3 style="margin-bottom:1rem;color:var(--navy-dark)">💼 Employment</h3>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Employee ID *</label><input id="as-empid" type="text" class="form-input" placeholder="EMP-12345"></div>
+          <div class="form-group"><label class="form-label">Designation *</label>
+            <select id="as-desig" class="form-select">
+              <option value="">Select...</option>
+              <option>Professor</option><option>Lecturer</option><option>Department Head</option>
+              <option>Security Officer</option><option>IT Administrator</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Admin Role *</label>
+          <select id="as-role" class="form-select">
+            <option value="">Select...</option>
+            <option value="Super Admin">Super Admin (Full Access)</option>
+            <option value="Moderator">Moderator (Manage Claims & Items)</option>
+            <option value="Item Manager">Item Manager</option>
+            <option value="Viewer">Viewer (Read-Only)</option>
+          </select>
+        </div>
+        <div class="divider"></div>
+        <h3 style="margin-bottom:1rem;color:var(--navy-dark)">🔒 Security</h3>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Password * (min 8)</label><input id="as-pass" type="password" class="form-input" placeholder="Strong password"></div>
+          <div class="form-group"><label class="form-label">Confirm Password *</label><input id="as-confirm" type="password" class="form-input" placeholder="Repeat password"><div class="form-error" id="as-pass-err">Passwords do not match</div></div>
+        </div>
+        <button class="btn btn-primary" id="as-submit">✓ Create Admin Account</button>
+        <div class="auth-footer">Already have an account? <a onclick="showPage('page-login')">Login here</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: DASHBOARD
+══════════════════════════════════════════ -->
+<div class="page" id="page-dashboard">
+  <nav class="nav-header">
+    <div class="container nav-inner">
+      <div class="nav-brand" onclick="showPage('page-dashboard')"><div class="nav-brand-icon">🔍</div><span>Lost & Found</span></div>
+      <ul class="nav-menu">
+        <li><span class="nav-link active" onclick="showPage('page-dashboard')">Dashboard</span></li>
+        <li><span class="nav-link" onclick="showPage('page-browse')">Browse Items</span></li>
+        <li><span class="nav-link" onclick="showPage('page-claims')">My Claims</span></li>
+      </ul>
+      <div class="nav-user">
+        <div class="nav-avatar" id="dash-avatar">A</div>
+        <div><div class="nav-user-name" id="dash-uname">User</div><div class="nav-user-role" id="dash-udept">Dept</div></div>
+        <button class="btn btn-secondary btn-sm" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+  <main class="page-content">
+    <div class="container">
+      <div class="page-header"><h1 class="page-title">Welcome Back! 👋</h1><p class="page-subtitle">Here's your lost & found activity</p></div>
+      <div class="profile-card fade-in" id="dash-profile"></div>
+      <div class="summary-grid" id="dash-stats"></div>
+      <div class="quick-actions fade-in">
+        <h2 class="section-title">Quick Actions</h2>
+        <button class="btn btn-primary btn-lg" style="width:auto" onclick="openModal('modal-report')">📝 Report an Item</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: BROWSE
+══════════════════════════════════════════ -->
+<div class="page" id="page-browse">
+  <nav class="nav-header">
+    <div class="container nav-inner">
+      <div class="nav-brand" onclick="showPage('page-dashboard')"><div class="nav-brand-icon">🔍</div><span>Lost & Found</span></div>
+      <ul class="nav-menu">
+        <li><span class="nav-link" onclick="showPage('page-dashboard')">Dashboard</span></li>
+        <li><span class="nav-link active" onclick="showPage('page-browse')">Browse Items</span></li>
+        <li><span class="nav-link" onclick="showPage('page-claims')">My Claims</span></li>
+      </ul>
+      <div class="nav-user">
+        <div class="nav-avatar" id="browse-avatar">A</div>
+        <div><div class="nav-user-name" id="browse-uname">User</div><div class="nav-user-role" id="browse-udept">Dept</div></div>
+        <button class="btn btn-secondary btn-sm" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+  <main class="page-content">
+    <div class="container">
+      <div class="page-header"><h1 class="page-title">Browse Items 🔍</h1><p class="page-subtitle">Search and claim lost or found items</p></div>
+      <div class="filter-bar fade-in">
+        <div class="filter-group"><label class="filter-label">Type</label><select id="f-type" class="filter-select"><option value="">All Types</option><option value="lost">Lost</option><option value="found">Found</option></select></div>
+        <div class="filter-group"><label class="filter-label">Category</label><select id="f-cat" class="filter-select"><option value="">All Categories</option></select></div>
+        <div class="filter-group"><label class="filter-label">Search</label><input id="f-search" type="text" class="filter-input" placeholder="Title or location..."></div>
+      </div>
+      <div class="items-grid" id="items-grid"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: MY CLAIMS
+══════════════════════════════════════════ -->
+<div class="page" id="page-claims">
+  <nav class="nav-header">
+    <div class="container nav-inner">
+      <div class="nav-brand" onclick="showPage('page-dashboard')"><div class="nav-brand-icon">🔍</div><span>Lost & Found</span></div>
+      <ul class="nav-menu">
+        <li><span class="nav-link" onclick="showPage('page-dashboard')">Dashboard</span></li>
+        <li><span class="nav-link" onclick="showPage('page-browse')">Browse Items</span></li>
+        <li><span class="nav-link active" onclick="showPage('page-claims')">My Claims</span></li>
+      </ul>
+      <div class="nav-user">
+        <div class="nav-avatar" id="claims-avatar">A</div>
+        <div><div class="nav-user-name" id="claims-uname">User</div><div class="nav-user-role" id="claims-udept">Dept</div></div>
+        <button class="btn btn-secondary btn-sm" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+  <main class="page-content">
+    <div class="container">
+      <div class="page-header"><h1 class="page-title">My Claims 📊</h1><p class="page-subtitle">Track the status of your item claims</p></div>
+      <div class="table-wrap fade-in">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Date</th><th>Item</th><th>Type</th><th>Proof</th><th>Status</th></tr></thead>
+          <tbody id="claims-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: ADMIN
+══════════════════════════════════════════ -->
+<div class="page" id="page-admin">
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-title">🔍 Lost & Found</div>
+        <div class="sidebar-sub">Admin Management Panel</div>
+      </div>
+      <ul class="sidebar-nav">
+        <li><span class="sidebar-link active">📋 Manage Claims</span></li>
+        <li><span class="sidebar-link" onclick="doLogout()">🚪 Logout</span></li>
+      </ul>
+    </aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div><h1 class="admin-title">Claims Management</h1><p style="color:var(--gray-600);margin-top:.25rem">Review and manage pending claims</p></div>
+        <div class="nav-user">
+          <div class="nav-avatar" id="admin-avatar">A</div>
+          <div><div class="nav-user-name" id="admin-uname">Admin</div><div class="nav-user-role" id="admin-role">Role</div></div>
+        </div>
+      </div>
+      <div class="summary-grid mb-xl" id="admin-stats"></div>
+      <div class="filter-tabs" id="admin-filter-tabs">
+        <button class="filter-tab active" data-f="all">All Claims</button>
+        <button class="filter-tab" data-f="pending">Pending</button>
+        <button class="filter-tab" data-f="approved">Approved</button>
+        <button class="filter-tab" data-f="rejected">Rejected</button>
+      </div>
+      <div class="table-wrap fade-in">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Date</th><th>Item</th><th>Claimant</th><th>Dept</th><th>Proof</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="admin-tbody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: REPORT ITEM
+══════════════════════════════════════════ -->
+<div class="modal" id="modal-report">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">📝 Report an Item</h3>
+      <button class="modal-close" onclick="closeModal('modal-report')">&times;</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Item Photo (optional)</label>
+      <div class="img-upload-area" id="img-upload-area" onclick="document.getElementById('img-file').click()">
+        <div class="img-placeholder" id="img-placeholder"><div class="img-placeholder-icon">📷</div><div class="img-placeholder-text">Click to upload photo</div></div>
+        <img id="img-preview" style="display:none" alt="preview">
+      </div>
+      <input type="file" id="img-file" accept="image/*" style="display:none">
+    </div>
+    <div class="form-group"><label class="form-label">Title *</label><input id="r-title" type="text" class="form-input" placeholder="e.g. Black iPhone 14"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Type *</label><select id="r-type" class="form-select"><option value="">Select...</option><option value="lost">Lost</option><option value="found">Found</option></select></div>
+      <div class="form-group"><label class="form-label">Category *</label><select id="r-cat" class="form-select"><option value="">Select...</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Location *</label><input id="r-loc" type="text" class="form-input" placeholder="e.g. Library 2nd Floor"></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea id="r-desc" class="form-textarea" placeholder="Describe the item in detail..."></textarea></div>
+    <button class="btn btn-primary" id="r-submit">✓ Submit Report</button>
+    <div id="match-box"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: CLAIM ITEM
+══════════════════════════════════════════ -->
+<div class="modal" id="modal-claim">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">📋 Claim This Item</h3>
+      <button class="modal-close" onclick="closeModal('modal-claim')">&times;</button>
+    </div>
+    <div id="claim-item-preview" style="background:var(--gray-50);padding:1rem;border-radius:var(--radius-md);margin-bottom:1.25rem"></div>
+    <input type="hidden" id="claim-item-id">
+    <div class="form-group"><label class="form-label">Proof of Ownership *</label><textarea id="claim-proof" class="form-textarea" placeholder="Describe how you can prove this item is yours..."></textarea></div>
+    <button class="btn btn-primary" id="claim-submit">✓ Submit Claim</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// DATABASE (localStorage)
+// ══════════════════════════════════════════
+const DB = {
+  get(k){try{return JSON.parse(localStorage.getItem('lf_'+k))||[]}catch{return[]}},
+  set(k,v){localStorage.setItem('lf_'+k,JSON.stringify(v))},
+  maxId(rows,field){return rows.length?Math.max(...rows.map(r=>r[field]||0)):0}
+};
+
+function seed(){
+  if(localStorage.getItem('lf_v3')) return;
+  DB.set('users',[
+    {user_id:1,name:'Ali Hassan',email:'ali.hassan@uni.edu.pk',phone:'0300-1234567',department:'Computer Science',password:'password123'},
+    {user_id:2,name:'Sara Khan',email:'sara.khan@uni.edu.pk',phone:'0301-2345678',department:'Electrical Engineering',password:'password123'},
+    {user_id:3,name:'Usman Tariq',email:'usman.tariq@uni.edu.pk',phone:'0302-3456789',department:'Business Administration',password:'password123'},
+    {user_id:4,name:'Ayesha Malik',email:'ayesha.malik@uni.edu.pk',phone:'0303-4567890',department:'Mathematics',password:'password123'},
+    {user_id:5,name:'Bilal Ahmed',email:'bilal.ahmed@uni.edu.pk',phone:'0304-5678901',department:'Physics',password:'password123'},
+    {user_id:6,name:'Zara Hussain',email:'zara.hussain@uni.edu.pk',phone:'0305-6789012',department:'Chemistry',password:'password123'},
+    {user_id:7,name:'Omar Sheikh',email:'omar.sheikh@uni.edu.pk',phone:'0306-7890123',department:'Computer Science',password:'password123'},
+    {user_id:8,name:'Hina Qureshi',email:'hina.qureshi@uni.edu.pk',phone:'0307-8901234',department:'Electrical Engineering',password:'password123'},
+  ]);
+  DB.set('admins',[
+    {admin_id:1,user_id:1,role:'Super Admin'},{admin_id:2,user_id:2,role:'Moderator'},
+    {admin_id:3,user_id:3,role:'Moderator'},{admin_id:4,user_id:4,role:'Viewer'},
+    {admin_id:5,user_id:5,role:'Item Manager'},
+  ]);
+  DB.set('categories',[
+    {category_id:1,category_name:'Electronics'},{category_id:2,category_name:'Books & Stationery'},
+    {category_id:3,category_name:'Clothing & Accessories'},{category_id:4,category_name:'ID Cards & Documents'},
+    {category_id:5,category_name:'Keys & Locks'},{category_id:6,category_name:'Sports Equipment'},
+    {category_id:7,category_name:'Bags & Wallets'},
+  ]);
+  DB.set('items',[
+    {item_id:1,title:'iPhone 14 Black',description:'Black iPhone 14 with cracked screen protector',item_type:'lost',location:'Library 2nd Floor',category_id:1,user_id:3,status:'open',image_url:null},
+    {item_id:2,title:'Scientific Calculator',description:'Casio FX-991ES Plus, has name written inside',item_type:'lost',location:'Room 204, CS Block',category_id:2,user_id:4,status:'open',image_url:null},
+    {item_id:3,title:'Blue Denim Jacket',description:'Navy blue jacket, size M, brand Levis',item_type:'found',location:'Cafeteria',category_id:3,user_id:5,status:'open',image_url:null},
+    {item_id:4,title:'Student ID Card',description:'ID card of a student named Kamran Raza',item_type:'found',location:'Main Entrance Gate',category_id:4,user_id:6,status:'open',image_url:null},
+    {item_id:5,title:'Bunch of Keys',description:'3 keys on a red keychain with a small car toy',item_type:'lost',location:'Parking Lot B',category_id:5,user_id:7,status:'open',image_url:null},
+    {item_id:6,title:'Cricket Bat',description:'Woodcraft bat, slightly worn handle',item_type:'found',location:'Sports Ground',category_id:6,user_id:8,status:'open',image_url:null},
+    {item_id:7,title:'Black Backpack',description:'Adidas backpack with math books inside',item_type:'lost',location:'Mosque Area',category_id:7,user_id:1,status:'open',image_url:null},
+    {item_id:8,title:'Wireless Earbuds',description:'White earbuds in transparent case, brand JBL',item_type:'found',location:'Hostel Common Room',category_id:1,user_id:2,status:'open',image_url:null},
+    {item_id:9,title:'Anatomy Textbook',description:"Gray's Anatomy 42nd edition with sticky notes",item_type:'lost',location:'Medical Block Library',category_id:2,user_id:3,status:'open',image_url:null},
+    {item_id:10,title:'University Hoodie',description:'Maroon university hoodie, XL size',item_type:'found',location:'Lab 3, Physics Block',category_id:3,user_id:4,status:'open',image_url:null},
+  ]);
+  DB.set('claims',[
+    {claim_id:1,claim_date:'2024-05-01',proof_details:'I have purchase receipt and photos of the phone',status:'approved',user_id:3,item_id:1},
+    {claim_id:2,claim_date:'2024-05-03',proof_details:'My name is written on the inside cover',status:'pending',user_id:4,item_id:2},
+    {claim_id:3,claim_date:'2024-05-05',proof_details:'I can describe the inner pocket contents',status:'approved',user_id:5,item_id:3},
+    {claim_id:4,claim_date:'2024-05-07',proof_details:'Here is a copy of my own ID for verification',status:'approved',user_id:6,item_id:4},
+    {claim_id:5,claim_date:'2024-05-09',proof_details:'The keychain was a gift, I can describe the toy car',status:'rejected',user_id:7,item_id:5},
+    {claim_id:6,claim_date:'2024-05-11',proof_details:'The bat has my initials carved at the bottom',status:'pending',user_id:8,item_id:6},
+    {claim_id:7,claim_date:'2024-05-13',proof_details:'I have photo showing me wearing that hoodie',status:'pending',user_id:4,item_id:10},
+    {claim_id:8,claim_date:'2024-05-15',proof_details:'The earbuds case has a small sticker on the back',status:'approved',user_id:2,item_id:8},
+    {claim_id:9,claim_date:'2024-05-17',proof_details:'The bag has my laptop charger inside with my name tag',status:'pending',user_id:1,item_id:7},
+    {claim_id:10,claim_date:'2024-05-19',proof_details:'I bought the textbook, have the bookshop bill',status:'approved',user_id:3,item_id:9},
+  ]);
+  localStorage.setItem('lf_v3','1');
+}
+seed();
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let currentUser = null;
+try{ currentUser = JSON.parse(localStorage.getItem('lf_session')); }catch{}
+
+function saveSession(u){ localStorage.setItem('lf_session', JSON.stringify(u)); currentUser=u; }
+function clearSession(){ localStorage.removeItem('lf_session'); currentUser=null; }
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+function esc(t){ if(!t) return ''; const d=document.createElement('div'); d.textContent=String(t); return d.innerHTML; }
+function fmtDate(s){ return new Date(s).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}); }
+function catName(id){ return (DB.get('categories').find(c=>c.category_id===id)||{}).category_name||'Unknown'; }
+function userName(id){ return (DB.get('users').find(u=>u.user_id===id)||{}).name||'Unknown'; }
+
+function notify(msg, type='success'){
+  document.querySelectorAll('.notif').forEach(n=>n.remove());
+  const n=document.createElement('div');
+  n.className='notif';
+  n.textContent=msg;
+  const bg={success:'#51cf66',error:'#fa5252',warning:'#ffd43b'}[type]||'#51cf66';
+  n.style.background=bg;
+  if(type==='warning') n.classList.add('warning');
+  document.body.appendChild(n);
+  setTimeout(()=>{ n.style.transition='opacity .3s'; n.style.opacity='0'; setTimeout(()=>n.remove(),300); },3000);
+}
+
+function openModal(id){ const m=document.getElementById(id); if(m){m.classList.add('active');document.body.style.overflow='hidden';} }
+function closeModal(id){ const m=document.getElementById(id); if(m){m.classList.remove('active');document.body.style.overflow='';} }
+
+document.addEventListener('click',e=>{ if(e.target.classList.contains('modal')){ e.target.classList.remove('active'); document.body.style.overflow=''; } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal.active').forEach(m=>{m.classList.remove('active');document.body.style.overflow='';}); });
+
+// ══════════════════════════════════════════
+// PAGE ROUTING
+// ══════════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const p=document.getElementById(id);
+  if(p){ p.classList.add('active'); window.scrollTo(0,0); }
+  if(id==='page-dashboard') renderDashboard();
+  if(id==='page-browse') renderBrowse();
+  if(id==='page-claims') renderMyClaims();
+  if(id==='page-admin') renderAdmin();
+}
+
+// ══════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════
+function doLogout(){ clearSession(); showPage('page-login'); }
+
+// LOGIN
+let isAdminPortal = false;
+document.getElementById('portal-student').onclick=()=>{ isAdminPortal=false; document.getElementById('portal-student').classList.add('active'); document.getElementById('portal-admin').classList.remove('active'); };
+document.getElementById('portal-admin').onclick=()=>{ isAdminPortal=true; document.getElementById('portal-admin').classList.add('active'); document.getElementById('portal-student').classList.remove('active'); };
+
+document.getElementById('login-btn').onclick=()=>{
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-password').value;
+  let ok=true;
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ document.getElementById('login-email-err').classList.add('visible'); document.getElementById('login-email').classList.add('error'); ok=false; } else { document.getElementById('login-email-err').classList.remove('visible'); document.getElementById('login-email').classList.remove('error'); }
+  if(!pass){ document.getElementById('login-pass-err').classList.add('visible'); document.getElementById('login-password').classList.add('error'); ok=false; } else { document.getElementById('login-pass-err').classList.remove('visible'); document.getElementById('login-password').classList.remove('error'); }
+  if(!ok) return;
+  const users=DB.get('users');
+  const user=users.find(u=>u.email===email && u.password===pass);
+  if(!user){ notify('Invalid email or password. Please sign up if you don\'t have an account.','error'); return; }
+  if(isAdminPortal){
+    const admins=DB.get('admins');
+    const ar=admins.find(a=>a.user_id===user.user_id);
+    if(!ar){ notify('You do not have admin access. Use Student portal or sign up as admin.','error'); return; }
+    saveSession({...user,isAdmin:true,adminRole:ar.role,admin_id:ar.admin_id});
+    notify('Welcome back, '+user.name+'!');
+    setTimeout(()=>showPage('page-admin'),600);
+  } else {
+    saveSession({...user,isAdmin:false});
+    notify('Welcome back, '+user.name+'!');
+    setTimeout(()=>showPage('page-dashboard'),600);
+  }
+};
+
+// STUDENT SIGNUP
+document.getElementById('ss-submit').onclick=()=>{
+  const name=document.getElementById('ss-name').value.trim();
+  const email=document.getElementById('ss-email').value.trim();
+  const phone=document.getElementById('ss-phone').value.trim();
+  const dept=document.getElementById('ss-dept').value;
+  const pass=document.getElementById('ss-pass').value;
+  const confirm=document.getElementById('ss-confirm').value;
+  if(!name||!email||!phone||!dept||!pass||!confirm){ notify('Please fill in all required fields.','error'); return; }
+  if(pass!==confirm){ document.getElementById('ss-pass-err').classList.add('visible'); return; }
+  document.getElementById('ss-pass-err').classList.remove('visible');
+  if(pass.length<6){ notify('Password must be at least 6 characters.','error'); return; }
+  const users=DB.get('users');
+  if(users.find(u=>u.email===email)){ notify('An account with this email already exists.','error'); return; }
+  const newId=DB.maxId(users,'user_id')+1;
+  users.push({user_id:newId,name,email,phone,department:dept,password:pass});
+  DB.set('users',users);
+  notify('Account created! Please log in.');
+  setTimeout(()=>showPage('page-login'),1200);
+};
+
+// ADMIN SIGNUP
+document.getElementById('as-submit').onclick=()=>{
+  const name=document.getElementById('as-name').value.trim();
+  const email=document.getElementById('as-email').value.trim();
+  const phone=document.getElementById('as-phone').value.trim();
+  const dept=document.getElementById('as-dept').value;
+  const empid=document.getElementById('as-empid').value.trim();
+  const desig=document.getElementById('as-desig').value;
+  const role=document.getElementById('as-role').value;
+  const pass=document.getElementById('as-pass').value;
+  const confirm=document.getElementById('as-confirm').value;
+  if(!name||!email||!phone||!dept||!empid||!desig||!role||!pass||!confirm){ notify('Please fill in all required fields.','error'); return; }
+  if(pass!==confirm){ document.getElementById('as-pass-err').classList.add('visible'); return; }
+  document.getElementById('as-pass-err').classList.remove('visible');
+  if(pass.length<8){ notify('Admin password must be at least 8 characters.','error'); return; }
+  const users=DB.get('users');
+  if(users.find(u=>u.email===email)){ notify('An account with this email already exists.','error'); return; }
+  const newUserId=DB.maxId(users,'user_id')+1;
+  users.push({user_id:newUserId,name,email,phone,department:dept,password:pass});
+  DB.set('users',users);
+  const admins=DB.get('admins');
+  admins.push({admin_id:DB.maxId(admins,'admin_id')+1,user_id:newUserId,role,employee_id:empid,designation:desig});
+  DB.set('admins',admins);
+  notify('Admin account created! Log in using Admin Portal.');
+  setTimeout(()=>showPage('page-login'),1200);
+};
+
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+function renderDashboard(){
+  if(!currentUser){ showPage('page-login'); return; }
+  const u=currentUser;
+  ['dash-avatar','dash-uname','dash-udept'].forEach(()=>{});
+  document.getElementById('dash-avatar').textContent=u.name.charAt(0);
+  document.getElementById('dash-uname').textContent=u.name;
+  document.getElementById('dash-udept').textContent=u.department;
+  document.getElementById('dash-profile').innerHTML=`
+    <div class="profile-avatar">${u.name.charAt(0)}</div>
+    <div class="profile-info">
+      <h2>${esc(u.name)}</h2>
+      <div class="profile-details">
+        <div class="profile-detail"><span>📧</span>${esc(u.email)}</div>
+        <div class="profile-detail"><span>📱</span>${esc(u.phone||'N/A')}</div>
+        <div class="profile-detail"><span>🏛️</span>${esc(u.department)}</div>
+      </div>
+    </div>`;
+  const claims=DB.get('claims').filter(c=>c.user_id===u.user_id);
+  const items=DB.get('items').filter(i=>i.user_id===u.user_id);
+  const recovered=claims.filter(c=>c.status==='approved').length;
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="summary-card"><div class="summary-card-title">Active Claims</div><div class="summary-card-value">${claims.filter(c=>c.status==='pending').length}</div></div>
+    <div class="summary-card"><div class="summary-card-title">Items Reported</div><div class="summary-card-value">${items.length}</div></div>
+    <div class="summary-card"><div class="summary-card-title">Items Recovered</div><div class="summary-card-value">${recovered}</div></div>`;
+  populateReportCats();
+}
+
+// REPORT MODAL
+let selectedImage=null;
+document.getElementById('img-file').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file) return;
+  selectedImage=file;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    document.getElementById('img-preview').src=ev.target.result;
+    document.getElementById('img-preview').style.display='block';
+    document.getElementById('img-placeholder').style.display='none';
+    document.getElementById('img-upload-area').classList.add('has-image');
+  };
+  reader.readAsDataURL(file);
+});
+
+function populateReportCats(){
+  const sel=document.getElementById('r-cat'); sel.innerHTML='<option value="">Select...</option>';
+  DB.get('categories').forEach(c=>{ const o=document.createElement('option'); o.value=c.category_id; o.textContent=c.category_name; sel.appendChild(o); });
+}
+
+document.getElementById('r-submit').onclick=async()=>{
+  const title=document.getElementById('r-title').value.trim();
+  const type=document.getElementById('r-type').value;
+  const catId=parseInt(document.getElementById('r-cat').value);
+  const loc=document.getElementById('r-loc').value.trim();
+  const desc=document.getElementById('r-desc').value.trim();
+  if(!title||!type||!catId||!loc){ notify('Please fill in all required fields.','error'); return; }
+  let image_url=null;
+  if(selectedImage){
+    image_url=await new Promise(res=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.readAsDataURL(selectedImage); });
+  }
+  const items=DB.get('items');
+  const newId=DB.maxId(items,'item_id')+1;
+  const newItem={item_id:newId,title,description:desc,item_type:type,location:loc,category_id:catId,user_id:currentUser.user_id,status:'open',image_url,created_at:new Date().toISOString().split('T')[0]};
+  items.push(newItem);
+  DB.set('items',items);
+  // smart match
+  const oppType=type==='lost'?'found':'lost';
+  const matches=items.filter(i=>i.item_id!==newId&&i.item_type===oppType).map(i=>{
+    const tw=title.toLowerCase().split(' '); const iw=i.title.toLowerCase().split(' ');
+    const shared=tw.filter(w=>w.length>3&&iw.includes(w)).length;
+    const score=Math.min(95,shared*25+(newItem.category_id===i.category_id?30:0)+(newItem.location===i.location?20:0));
+    return{...i,score};
+  }).filter(i=>i.score>20).sort((a,b)=>b.score-a.score).slice(0,3);
+  notify('Item reported successfully!');
+  document.getElementById('r-title').value=''; document.getElementById('r-type').value=''; document.getElementById('r-cat').value=''; document.getElementById('r-loc').value=''; document.getElementById('r-desc').value='';
+  document.getElementById('img-preview').style.display='none'; document.getElementById('img-placeholder').style.display=''; document.getElementById('img-upload-area').classList.remove('has-image'); selectedImage=null;
+  if(matches.length){
+    document.getElementById('match-box').innerHTML=`<div style="margin-top:1rem;padding:1rem;background:rgba(100,255,218,.08);border:1px solid var(--emerald);border-radius:8px"><h4 style="margin-bottom:.75rem;color:var(--navy-dark)">✨ Smart Matches Found (${matches.length})</h4>${matches.map(m=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem;background:#fff;border-radius:6px;margin-bottom:.4rem"><div><strong>${esc(m.title)}</strong><span class="item-badge ${m.item_type}" style="margin-left:6px">${m.item_type}</span><div style="font-size:.75rem;color:var(--gray-600)">📍 ${esc(m.location)}</div></div><span style="font-weight:700;color:var(--emerald)">${m.score}%</span></div>`).join('')}<button class="btn btn-secondary btn-sm" style="margin-top:.75rem;display:inline-flex" onclick="closeModal('modal-report');showPage('page-browse')">View in Browse →</button></div>`;
+  } else { document.getElementById('match-box').innerHTML=''; }
+  renderDashboard();
+};
+
+// ══════════════════════════════════════════
+// BROWSE
+// ══════════════════════════════════════════
+function renderBrowse(){
+  if(!currentUser){ showPage('page-login'); return; }
+  const u=currentUser;
+  document.getElementById('browse-avatar').textContent=u.name.charAt(0);
+  document.getElementById('browse-uname').textContent=u.name;
+  document.getElementById('browse-udept').textContent=u.department;
+  // populate filter cats
+  const fcat=document.getElementById('f-cat'); fcat.innerHTML='<option value="">All Categories</option>';
+  DB.get('categories').forEach(c=>{ const o=document.createElement('option'); o.value=c.category_id; o.textContent=c.category_name; fcat.appendChild(o); });
+  renderItemsGrid();
+  document.getElementById('f-type').onchange=renderItemsGrid;
+  document.getElementById('f-cat').onchange=renderItemsGrid;
+  document.getElementById('f-search').oninput=renderItemsGrid;
+}
+
+function renderItemsGrid(){
+  const typeF=document.getElementById('f-type').value;
+  const catF=document.getElementById('f-cat').value;
+  const search=document.getElementById('f-search').value.toLowerCase();
+  let items=DB.get('items');
+  if(typeF) items=items.filter(i=>i.item_type===typeF);
+  if(catF) items=items.filter(i=>i.category_id===parseInt(catF));
+  if(search) items=items.filter(i=>i.title.toLowerCase().includes(search)||i.location.toLowerCase().includes(search)||(i.description||'').toLowerCase().includes(search));
+  const grid=document.getElementById('items-grid');
+  if(!items.length){ grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:4rem"><p style="font-size:1.2rem;color:var(--gray-600)">No items found matching your criteria</p></div>`; return; }
+  grid.innerHTML=items.map(item=>{
+    const cat=catName(item.category_id); const reporter=userName(item.user_id);
+    const icon=item.item_type==='lost'?'🔴':'🟢';
+    const isOwn=item.user_id===currentUser.user_id;
+    return `<div class="item-card fade-in">
+      <div class="item-card-image">${item.image_url?`<img src="${item.image_url}" alt="${esc(item.title)}">`:`<div class="item-card-icon">${icon}</div>`}</div>
+      <div class="item-content">
+        <div class="item-header"><h3 class="item-title">${esc(item.title)}</h3><span class="item-badge ${item.item_type}">${item.item_type}</span></div>
+        <div class="item-meta">
+          <div class="item-meta-row">📍 ${esc(item.location)}</div>
+          <div class="item-meta-row">🏷️ ${esc(cat)}</div>
+          <div class="item-meta-row">👤 Reported by: ${esc(reporter)}</div>
+        </div>
+        <p class="item-desc">${esc(item.description||'No description provided')}</p>
+        ${isOwn?`<button class="btn btn-secondary" disabled>You reported this item</button>`
+          :item.status!=='open'?`<button class="btn btn-secondary" disabled>Item claimed</button>`
+          :`<button class="btn btn-primary" onclick="openClaimModal(${item.item_id})">Claim This Item</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openClaimModal(itemId){
+  const item=DB.get('items').find(i=>i.item_id===itemId); if(!item) return;
+  document.getElementById('claim-item-id').value=itemId;
+  document.getElementById('claim-item-preview').innerHTML=`<h4 style="margin-bottom:.4rem">${esc(item.title)}</h4><p style="color:var(--gray-600);font-size:.875rem">📍 ${esc(item.location)} | 🏷️ ${esc(catName(item.category_id))}</p>`;
+  document.getElementById('claim-proof').value='';
+  openModal('modal-claim');
+}
+
+document.getElementById('claim-submit').onclick=()=>{
+  const itemId=parseInt(document.getElementById('claim-item-id').value);
+  const proof=document.getElementById('claim-proof').value.trim();
+  if(!proof){ notify('Please provide proof of ownership.','error'); return; }
+  const claims=DB.get('claims');
+  if(claims.find(c=>c.item_id===itemId&&c.user_id===currentUser.user_id)){ notify('You have already submitted a claim for this item.','warning'); return; }
+  claims.push({claim_id:DB.maxId(claims,'claim_id')+1,claim_date:new Date().toISOString().split('T')[0],proof_details:proof,status:'pending',user_id:currentUser.user_id,item_id:itemId});
+  DB.set('claims',claims);
+  notify('Claim submitted! An admin will review it shortly.');
+  closeModal('modal-claim');
+};
+
+// ══════════════════════════════════════════
+// MY CLAIMS
+// ══════════════════════════════════════════
+function renderMyClaims(){
+  if(!currentUser){ showPage('page-login'); return; }
+  const u=currentUser;
+  document.getElementById('claims-avatar').textContent=u.name.charAt(0);
+  document.getElementById('claims-uname').textContent=u.name;
+  document.getElementById('claims-udept').textContent=u.department;
+  const claims=DB.get('claims').filter(c=>c.user_id===u.user_id);
+  const items=DB.get('items');
+  const tbody=document.getElementById('claims-tbody');
+  if(!claims.length){ tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--gray-600)"><p style="font-size:1.1rem;margin-bottom:1rem">No claims yet</p><button class="btn btn-primary" style="width:auto" onclick="showPage('page-browse')">Browse Items to Claim</button></td></tr>`; return; }
+  tbody.innerHTML=claims.map(c=>{
+    const item=items.find(i=>i.item_id===c.item_id)||{};
+    return `<tr>
+      <td><strong>#${c.claim_id}</strong></td>
+      <td>${fmtDate(c.claim_date)}</td>
+      <td><strong>${esc(item.title||'Unknown')}</strong></td>
+      <td><span class="item-badge ${item.item_type||''}">${item.item_type||'—'}</span></td>
+      <td style="max-width:260px;font-size:.85rem;color:var(--gray-700)">${esc((c.proof_details||'').length>90?c.proof_details.substring(0,90)+'...':c.proof_details)}</td>
+      <td><span class="status-badge ${c.status}">${c.status}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════
+let adminFilter='all';
+
+function renderAdmin(){
+  if(!currentUser||!currentUser.isAdmin){ showPage('page-login'); return; }
+  const u=currentUser;
+  document.getElementById('admin-avatar').textContent=u.name.charAt(0);
+  document.getElementById('admin-uname').textContent=u.name;
+  document.getElementById('admin-role').textContent=u.adminRole||'Admin';
+  renderAdminStats();
+  renderAdminClaims();
+  document.querySelectorAll('.filter-tab').forEach(tab=>{
+    tab.onclick=()=>{
+      adminFilter=tab.dataset.f;
+      document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      renderAdminClaims();
+    };
+  });
+}
+
+function renderAdminStats(){
+  const claims=DB.get('claims');
+  const pending=claims.filter(c=>c.status==='pending').length;
+  const approved=claims.filter(c=>c.status==='approved').length;
+  const rejected=claims.filter(c=>c.status==='rejected').length;
+  const rate=claims.length?Math.round((approved/claims.length)*100):0;
+  document.getElementById('admin-stats').innerHTML=`
+    <div class="summary-card"><div class="summary-card-title">Pending Claims</div><div class="summary-card-value">${pending}</div></div>
+    <div class="summary-card"><div class="summary-card-title">Approved</div><div class="summary-card-value">${approved}</div></div>
+    <div class="summary-card"><div class="summary-card-title">Rejected</div><div class="summary-card-value">${rejected}</div></div>
+    <div class="summary-card"><div class="summary-card-title">Recovery Rate</div><div class="summary-card-value">${rate}%</div></div>`;
+}
+
+function renderAdminClaims(){
+  let claims=DB.get('claims');
+  if(adminFilter!=='all') claims=claims.filter(c=>c.status===adminFilter);
+  const items=DB.get('items'); const users=DB.get('users');
+  const tbody=document.getElementById('admin-tbody');
+  if(!claims.length){ tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray-600)">No claims found</td></tr>`; return; }
+  tbody.innerHTML=claims.map(c=>{
+    const item=items.find(i=>i.item_id===c.item_id)||{};
+    const user=users.find(u=>u.user_id===c.user_id)||{};
+    return `<tr>
+      <td><strong>#${c.claim_id}</strong></td>
+      <td>${fmtDate(c.claim_date)}</td>
+      <td><strong>${esc(item.title||'Unknown')}</strong>${item.item_type?`<span class="item-badge ${item.item_type}" style="margin-left:6px">${item.item_type}</span>`:''}</td>
+      <td><div>${esc(user.name||'Unknown')}</div><div style="font-size:.75rem;color:var(--gray-600)">${esc(user.email||'')}</div></td>
+      <td>${esc(user.department||'')}</td>
+      <td style="max-width:200px;font-size:.82rem;color:var(--gray-700)">${esc((c.proof_details||'').length>70?c.proof_details.substring(0,70)+'...':c.proof_details)}</td>
+      <td><span class="status-badge ${c.status}">${c.status}</span></td>
+      <td>${c.status==='pending'?`<div class="action-btns"><button class="btn btn-success btn-sm" onclick="updateClaim(${c.claim_id},'approved')">✓ Approve</button><button class="btn btn-danger btn-sm" onclick="updateClaim(${c.claim_id},'rejected')">✕ Reject</button></div>`:'<span style="color:var(--gray-500);font-size:.85rem">Processed</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function updateClaim(claimId, status){
+  if(!confirm(`Mark claim #${claimId} as ${status}?`)) return;
+  const claims=DB.get('claims');
+  const idx=claims.findIndex(c=>c.claim_id===claimId);
+  if(idx===-1){ notify('Claim not found.','error'); return; }
+  claims[idx].status=status;
+  DB.set('claims',claims);
+  notify(`Claim #${claimId} ${status}.`,'success');
+  renderAdminStats();
+  renderAdminClaims();
+}
+
+// ══════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════
+if(currentUser){
+  if(currentUser.isAdmin) showPage('page-admin');
+  else showPage('page-dashboard');
+}
+</script>
+</body>
+</html>
