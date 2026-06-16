@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieBox Clone</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="moviebox.css">
+</head>
+<body>
+    <!-- Fixed Top Header -->
+    <header class="top-header fixed-top">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a href="#" class="logo">
+                <span class="logo-movie">MOVIE</span><span class="logo-box">BOX</span>
+            </a>
+            <button class="btn btn-link search-btn" type="button">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Menu Strip (Sub-header) -->
+    <nav class="menu-strip fixed-top">
+        <div class="menu-container">
+            <a href="#" class="menu-link active" data-category="All">All</a>
+            <a href="#" class="menu-link" data-category="Trending">Trending</a>
+            <a href="#" class="menu-link" data-category="X-Flex">X-Flex</a>
+            <a href="#" class="menu-link" data-category="Action">Action</a>
+            <a href="#" class="menu-link" data-category="Sci-Fi">Sci-Fi</a>
+            <a href="#" class="menu-link" data-category="Horror">Horror</a>
+            <a href="#" class="menu-link" data-category="Romance">Romance</a>
+            <a href="#" class="menu-link" data-category="Series">Series</a>
+            <a href="#" class="menu-link" data-category="My List">My List</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">
+            <!-- X-Flex View: Genre Sections with Horizontal Scroll -->
+            <div id="xflexView">
+                <!-- Action Section -->
+                <div class="genre-section" data-genre="Action">
+                    <h4 class="genre-title">Action</h4>
+                    <div class="x-scroll-container" id="actionScroll">
+                        <!-- Action movies rendered here -->
+                    </div>
+                </div>
+                
+                <!-- Sci-Fi Section -->
+                <div class="genre-section" data-genre="Sci-Fi">
+                    <h4 class="genre-title">Sci-Fi</h4>
+                    <div class="x-scroll-container" id="scifiScroll">
+                        <!-- Sci-Fi movies rendered here -->
+                    </div>
+                </div>
+                
+                <!-- Horror Section -->
+                <div class="genre-section" data-genre="Horror">
+                    <h4 class="genre-title">Horror</h4>
+                    <div class="x-scroll-container" id="horrorScroll">
+                        <!-- Horror movies rendered here -->
+                    </div>
+                </div>
+                
+                <!-- Romance Section -->
+                <div class="genre-section" data-genre="Romance">
+                    <h4 class="genre-title">Romance</h4>
+                    <div class="x-scroll-container" id="romanceScroll">
+                        <!-- Romance movies rendered here -->
+                    </div>
+                </div>
+                
+                <!-- Series Section -->
+                <div class="genre-section" data-genre="Series">
+                    <h4 class="genre-title">Series</h4>
+                    <div class="x-scroll-container" id="seriesScroll">
+                        <!-- Series rendered here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Standard Grid View (for filtered categories) -->
+            <div id="movieGrid" class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3 d-none">
+                <!-- Movies will be rendered here by JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Movie Modal -->
+    <div class="modal fade" id="movieModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title fw-bold" id="modalTitle">Movie Title</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <img id="modalPoster" src="" alt="Movie Poster" class="img-fluid rounded">
+                        </div>
+                        <div class="col-md-7 d-flex flex-column justify-content-center">
+                            <p id="modalYear" class="text-gold mb-2"></p>
+                            <p id="modalGenre" class="text-secondary mb-3"></p>
+                            <p id="modalDescription" class="mb-4"></p>
+                            <button class="btn btn-watch btn-lg w-100">
+                                <i class="bi bi-play-fill me-2"></i>Watch Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="moviebox.js"></script>
+</body>
+</html>

@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+# FrontEndProjects
+=======
 # University Lost & Found
 
 A single-page web application for university students and staff to report, browse, and claim lost or found items on campus.
@@ -139,3 +142,4 @@ Since this is a frontend-only demo:
 - Email notifications for claim status updates
 - Image hosting via a cloud storage service
 - Mobile app version
+>>>>>>> 8e9d42d020ae17cff3ac509fe0969452e1daa4a8
